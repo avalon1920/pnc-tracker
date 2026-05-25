@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Tracker — PNC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1C4F6A; --surface: #2A6280; --surface-hi: #347898;
+      --border: rgba(255,255,255,0.1); --border-hi: rgba(255,255,255,0.2);
+      --text: #FFFFFF; --muted: rgba(255,255,255,0.6); --faint: rgba(255,255,255,0.35);
+    }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 44px 28px 80px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 36px; }
+    .header h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .header-sub { font-size: 12px; color: var(--muted); }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: opacity 0.15s, transform 0.1s; }
+    .btn:hover { opacity: 0.85; } .btn:active { transform: scale(0.98); }
+    .btn-primary { background: #F59E0B; color: #0C0C0F; }
+    .btn-ghost { background: transparent; color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.3); }
+    .btn-danger { background: transparent; color: #F87171; border: 1px solid #F8717128; font-size: 11px; padding: 6px 12px; }
+    .nav-tabs { display: flex; gap: 4px; margin-bottom: 18px; flex-wrap: wrap; }
+    .ntab { padding: 6px 16px; border-radius: 7px; font-size: 12px; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--muted); font-family: inherit; transition: all 0.15s; }
+    .ntab.active { background: #FFFFFF; color: #1C4F6A; border-color: transparent; }
+    .ntab.rankings-tab { margin-left: auto; color: #F59E0B; border-color: rgba(245,158,11,0.35); }
+    .ntab.rankings-tab.active { background: rgba(245,158,11,0.15); color: #F59E0B; border-color: rgba(245,158,11,0.5); }
+    .goals { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 12px; }
+    .goal-card { background: var(--surface); border-radius: 12px; padding: 13px 12px; border: 1px solid transparent; transition: border-color 0.2s; box-shadow: 0 2px 14px rgba(0,0,0,0.2); }
+    .goal-card.met { border-color: var(--tc-20); }
+    .goal-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .goal-count { font-size: 24px; font-weight: 600; margin-bottom: 8px; line-height: 1; }
+    .goal-count small { font-size: 12px; font-weight: 400; color: var(--muted); }
+    .bar-track { height: 3px; background: rgba(255,255,255,0.12); border-radius: 2px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+    .buckets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 28px; }
+    .bucket-card { background: var(--surface); border-radius: 8px; padding: 10px 12px; border-left: 3px solid var(--bc); box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .bucket-label { font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; line-height: 1.35; min-height: 26px; display: flex; align-items: flex-end; }
+    .bucket-count { font-size: 20px; font-weight: 600; color: var(--bc); line-height: 1; }
+    .day-row { display: grid; grid-template-columns: 108px 1fr; gap: 16px; padding: 10px 12px; border-radius: 8px; margin-bottom: 2px; border: 1px solid transparent; }
+    .day-row.today { background: var(--surface); border-color: var(--border-hi); }
+    .day-name { font-size: 12px; font-weight: 500; color: var(--muted); }
+    .day-row.today .day-name { color: #F59E0B; }
+    .day-num { font-size: 10px; color: var(--faint); margin-top: 2px; }
+    .day-posts { display: flex; flex-wrap: wrap; gap: 7px; align-items: flex-start; padding-top: 2px; min-height: 38px; }
+    .empty-day { font-size: 12px; color: var(--faint); font-style: italic; padding-top: 9px; }
+    .post-card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--tc); border-radius: 8px; padding: 7px 30px 7px 10px; max-width: 240px; min-width: 140px; position: relative; cursor: pointer; transition: background 0.15s; box-shadow: 0 2px 14px rgba(0,0,0,0.2); }
+    .post-card:hover { background: var(--surface-hi); }
+    .card-header { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-bottom: 3px; }
+    .type-badge { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: var(--tc); }
+    .bucket-badge { font-size: 9px; color: var(--bc, var(--faint)); background: rgba(0,0,0,0.15); padding: 1px 5px; border-radius: 3px; }
+    .repurpose-pill { font-size: 9px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.2); padding: 1px 6px; border-radius: 3px; }
+    .card-title { font-size: 12px; color: var(--text); line-height: 1.35; }
+    .card-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+    .stat { font-size: 10px; color: var(--muted); }
+    .card-reflection { font-size: 10px; color: var(--muted); font-style: italic; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 5px; margin-top: 5px; line-height: 1.4; }
+    .card-del { position: absolute; top: 4px; right: 6px; background: none; border: none; color: var(--faint); cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 4px; transition: color 0.15s; }
+    .card-del:hover { color: #F87171; }
+    .rankings-controls { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .rankings-controls label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+    .metric-select { background: var(--surface); border: 1px solid var(--border-hi); border-radius: 7px; color: var(--text); padding: 7px 12px; font-size: 12px; font-family: inherit; cursor: pointer; }
+    .metric-select:focus { outline: none; border-color: #F59E0B; }
+    .no-data-msg { font-size: 13px; color: var(--muted); font-style: italic; padding: 24px 0; }
+    .rank-row { display: grid; grid-template-columns: 36px 1fr auto; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); margin-bottom: 6px; cursor: pointer; transition: background 0.15s; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .rank-row:hover { background: var(--surface-hi); }
+    .rank-row.gold { border-color: #F59E0B40; }
+    .rank-num { font-size: 18px; font-weight: 700; color: var(--faint); text-align: center; }
+    .rank-row.gold .rank-num { color: #F59E0B; }
+    .rank-title { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+    .rank-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .rank-tag { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
+    .rank-date { font-size: 11px; color: var(--muted); }
+    .rank-value { font-size: 24px; font-weight: 600; text-align: right; white-space: nowrap; }
+    .rank-row.gold .rank-value { color: #F59E0B; }
+    .rank-value small { font-size: 10px; font-weight: 400; color: var(--muted); display: block; text-align: right; margin-top: 1px; }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+    .overlay.open { display: flex; }
+    .modal { background: var(--surface); border: 1px solid var(--border-hi); border-radius: 14px; padding: 26px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.35); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .modal-head h2 { font-size: 15px; font-weight: 600; }
+    .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 22px; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+    .modal-close:hover { background: var(--surface-hi); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .fg-full { grid-column: span 2; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+    .stat-hint { font-size: 10px; color: var(--faint); font-style: italic; margin-top: 2px; }
+    input[type=text], input[type=number], input[type=date], input[type=url], select, textarea { background: var(--bg); border: 1px solid var(--border-hi); border-radius: 7px; color: var(--text); padding: 9px 12px; font-size: 13px; font-family: inherit; width: 100%; transition: border-color 0.15s; }
+    input[type=text]:focus, input[type=number]:focus, input[type=date]:focus, input[type=url]:focus, select:focus, textarea:focus { outline: none; border-color: #F59E0B; }
+    textarea { resize: vertical; min-height: 90px; }
+    select option { background: #1C4F6A; }
+    .section-divider { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); padding-top: 18px; margin: 18px 0 14px; border-top: 1px solid rgba(255,255,255,0.12); }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); }
+    .setup-modal { max-width: 480px; }
+    .setup-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .setup-title { font-size: 22px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.5px; }
+    .setup-desc { font-size: 13px; color: var(--muted); margin-bottom: 26px; line-height: 1.6; }
+    .bucket-row { display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: center; }
+    input[type=color] { padding: 2px; height: 36px; width: 36px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-hi); background: var(--bg); }
+    #grid .day-row:nth-child(odd)  { background: rgba(255,255,255,0.05); }
+    #grid .day-row:nth-child(even) { background: rgba(0,0,0,0.06); }
+    #grid .day-row.today           { background: var(--surface); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <h1>Content Tracker</h1>
+      <div class="header-sub" id="hdr-sub"></div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="openSettings()">Settings</button>
+      <button class="btn btn-primary" onclick="openAdd()">+ Log post</button>
+    </div>
+  </div>
+  <div class="nav-tabs" id="ntabs"></div>
+  <div class="goals" id="goals"></div>
+  <div class="buckets" id="buckets"></div>
+  <div id="grid"></div>
+  <div id="rankings" style="display:none"></div>
+  <div style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+    <button class="btn btn-ghost" onclick="backupData()">&#8595; Back up all data</button>
+  </div>
+</div>
+
+<!-- First-run setup -->
+<div class="overlay" id="setup-overlay">
+  <div class="modal setup-modal">
+    <div class="setup-eyebrow">Welcome</div>
+    <div class="setup-title">Content Tracker</div>
+    <div class="setup-desc">Log every post you publish — reels, carousels, stories, and more. Your data stays on this device. Set a start date and everything organises by week automatically.</div>
+    <div class="field" style="margin-bottom:22px">
+      <label>Start date — when does week 1 begin?</label>
+      <input type="date" id="setup-date">
+      <div class="stat-hint">You can change this any time in settings.</div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="setupSave()">Get started</button>
+  </div>
+</div>
+
+<!-- Log / edit post -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modal-ttl">Log post</h2>
+      <button class="modal-close" onclick="closeModal()">&#215;</button>
+    </div>
+    <div class="form-grid">
+      <div class="field fg-full"><label>Title / topic</label><input type="text" id="f-title" placeholder="What was it about?"></div>
+      <div class="field"><label>Type</label>
+        <select id="f-type">
+          <option value="reel">Reel</option>
+          <option value="carousel">Carousel</option>
+          <option value="story">Story</option>
+          <option value="podcast">Podcast</option>
+          <option value="longshot">Long shot</option>
+          <option value="leadgen">Lead gen</option>
+        </select>
+      </div>
+      <div class="field"><label>Date posted</label><input type="date" id="f-date"></div>
+      <div class="field fg-full"><label>Content bucket</label><select id="f-bucket"></select></div>
+      <div class="field fg-full">
+        <label>Also tag as</label>
+        <div style="display:flex;gap:20px;padding-top:8px">
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" id="f-tag-leadgen" style="width:auto;accent-color:#22D3EE"> Lead gen</label>
+        </div>
+      </div>
+      <div class="field fg-full"><label>Repurposed from</label><select id="f-repurposed"></select></div>
+      <div class="field fg-full"><label>Instagram URL</label><input type="url" id="f-instagram" placeholder="https://www.instagram.com/p/…"><div class="stat-hint">Paste when live — used to pull performance data automatically</div></div>
+    </div>
+    <div class="section-divider">Performance — add now or come back later</div>
+    <div class="stats-grid">
+      <div class="field"><label>Views</label><input type="number" id="f-views" placeholder="—"><div class="stat-hint">Reel plays</div></div>
+      <div class="field"><label>Reach</label><input type="number" id="f-reach" placeholder="—"><div class="stat-hint">Unique viewers</div></div>
+      <div class="field"><label>Likes</label><input type="number" id="f-likes" placeholder="—"></div>
+      <div class="field"><label>Comments</label><input type="number" id="f-comments" placeholder="—"></div>
+      <div class="field"><label>Saves</label><input type="number" id="f-saves" placeholder="—"></div>
+      <div class="field"><label>Shares</label><input type="number" id="f-shares" placeholder="—"><div class="stat-hint">Forwards / reposts</div></div>
+      <div class="field"><label>Watch time (s)</label><input type="number" id="f-watch_time_sec" placeholder="—" step="0.1"><div class="stat-hint">Avg. seconds</div></div>
+      <div class="field"><label>DMs</label><input type="number" id="f-dms" placeholder="—"></div>
+    </div>
+    <div class="section-divider">Reflection</div>
+    <div class="field"><label>What worked, what flopped, anything worth noting</label><textarea id="f-reflection" placeholder="Hook landed well. Saves were high — people are keeping it for later..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="del-btn" onclick="deletePost()" style="display:none">Delete post</button>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="savePost()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="overlay" id="settings-overlay">
+  <div class="modal setup-modal">
+    <div class="modal-head">
+      <h2>Settings</h2>
+      <button class="modal-close" onclick="closeSettings()">&#215;</button>
+    </div>
+    <div class="field" style="margin-bottom:18px">
+      <label>Start date (week 1 begins)</label>
+      <input type="date" id="settings-date">
+      <div class="stat-hint">Changing this shifts all week numbers. Your posts stay put.</div>
+    </div>
+    <div class="section-divider" style="margin-top:0">Weekly format goals</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:6px">
+      <div class="field"><label>Reels</label><input type="number" id="sg-reel" min="0" max="99"></div>
+      <div class="field"><label>Carousels</label><input type="number" id="sg-carousel" min="0" max="99"></div>
+      <div class="field"><label>Stories</label><input type="number" id="sg-story" min="0" max="99"></div>
+      <div class="field"><label>Podcasts</label><input type="number" id="sg-podcast" min="0" max="99"></div>
+      <div class="field"><label>Long shots</label><input type="number" id="sg-longshot" min="0" max="99"></div>
+      <div class="field"><label>Lead gen</label><input type="number" id="sg-leadgen" min="0" max="99"></div>
+    </div>
+    <div class="section-divider">Content buckets</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5">Rename or recolour your five content buckets. Bucket keys stay fixed so existing posts keep their tags.</div>
+    <div id="sg-buckets" style="display:flex;flex-direction:column;gap:8px;margin-bottom:6px"></div>
+    <div class="modal-footer">
+      <div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="settingsSave()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const LS         = 'pnc_tracker_v1';
+  const LS_START   = 'pnc_tracker_start_v1';
+  const LS_GOALS   = 'pnc_tracker_goals_v1';
+  const LS_BUCKETS = 'pnc_tracker_buckets_v1';
+
+  const DEFAULT_GOALS = {reel:5, carousel:5, story:5, podcast:1, longshot:1, leadgen:2};
+  const DEFAULT_BUCKETS = {
+    'works-bollocks':    {label:'What works vs bollocks', color:'#FB923C'},
+    'imperfect-progress':{label:'Imperfect progress',    color:'#818CF8'},
+    'design-willpower':  {label:'Design beats willpower',color:'#2DD4BF'},
+    'peak-pathway':      {label:'Peak Pathway',          color:'#F472B6'},
+    'sean':              {label:'Sean',                  color:'#94A3B8'},
+  };
+  const DAYS_LBL = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const MONS_LBL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const TYPES = {
+    reel:    {label:'Reel',      color:'#F59E0B'},
+    carousel:{label:'Carousel',  color:'#4A9EF5'},
+    story:   {label:'Story',     color:'#A78BFA'},
+    podcast: {label:'Podcast',   color:'#34D399'},
+    longshot:{label:'Long shot', color:'#F87171'},
+    leadgen: {label:'Lead gen',  color:'#22D3EE'},
+  };
+  const STAT_FIELDS = ['views','reach','likes','comments','saves','shares','watch_time_sec','dms'];
+  const METRICS = [
+    {key:'views',         label:'Views',       hint:'Reel plays'},
+    {key:'reach',         label:'Reach',       hint:'Unique viewers'},
+    {key:'likes',         label:'Likes',       hint:''},
+    {key:'comments',      label:'Comments',    hint:''},
+    {key:'saves',         label:'Saves',       hint:''},
+    {key:'shares',        label:'Shares',      hint:'Forwards / reposts'},
+    {key:'watch_time_sec',label:'Watch time',  hint:'Avg. seconds'},
+    {key:'dms',           label:'DMs',         hint:''},
+  ];
+
+  // === SYNCED_POSTS_START ===
+  const SYNCED_POSTS = [
+  {id:"asana_1214703610508903",title:"Don't compensate for a big weekend",type:"reel",tags:[],bucket:"imperfect-progress",date:"2026-05-11",matched:"unmatched"},
+  {id:"asana_1214688388337813",title:"Not changing much in a nutrition consult",type:"carousel",tags:["leadgen"],bucket:"works-bollocks",date:"2026-05-11",instagram_url:"https://www.instagram.com/p/DYMHqP4k5pc/",ig_id:"18042996356572157",matched:"auto",reach:208,likes:14,comments:1,shares:0,last_fetched:"2026-05-23"},
+  {id:"asana_1212669606383501",title:"Sorting out your diet",type:"carousel",tags:["leadgen"],bucket:"works-bollocks",date:"2026-05-11",matched:"unmatched"},
+  {id:"asana_1214721633121251",title:"You know what to eat (Situation Problem)",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-12",instagram_url:"https://www.instagram.com/p/DYOsZ-Ok4oP/",ig_id:"18009571811910610",matched:"auto",reach:336,likes:13,comments:0,shares:0,last_fetched:"2026-05-23"},
+  {id:"asana_1214721837048585",title:"When you swore you'd start eating healthy next week... it's next week",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-12",instagram_url:"https://www.instagram.com/reel/DYNgy0Oz-VL/",ig_id:"18082997105531713",matched:"auto",views:673,reach:385,likes:11,comments:0,shares:0,watch_time_sec:5.7,last_fetched:"2026-05-23"},
+  {id:"asana_1214763143173088",title:"Who I work with (all-or-nothing niche post)",type:"carousel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-13",instagram_url:"https://www.instagram.com/p/DYRXfF7kxWO/",ig_id:"18094650808922518",matched:"auto",reach:397,likes:23,comments:1,saves:1,shares:0,last_fetched:"2026-05-23"},
+  {id:"asana_1214796437350370",title:"Reposted oil reel",type:"reel",tags:[],bucket:"works-bollocks",date:"2026-05-14",matched:"unmatched"},
+  {id:"asana_1214826427206501",title:"I didn't even want the crisps (environment design)",type:"reel",tags:["leadgen"],bucket:"design-willpower",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYazjNwzjHx/",ig_id:"17879991378432943",matched:"date-only",views:118,reach:107,likes:0,comments:0,shares:0,watch_time_sec:4.6,last_fetched:"2026-05-23"},
+  {id:"asana_1214826452078903",title:"sliding down hill meme (you eat healthy all week, then Friday hits)",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYVr1SJzAGr/",ig_id:"18119479204735035",matched:"date-only",views:456,reach:302,likes:3,comments:0,shares:1,watch_time_sec:5.4,last_fetched:"2026-05-23"},
+  {id:"asana_1214878500465886",title:"Who do I work with and what do I do",type:"reel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYbUNRlzlDh/",ig_id:"18086976698071866",matched:"auto",views:107,reach:106,likes:0,comments:0,shares:0,watch_time_sec:4.3,last_fetched:"2026-05-23"},
+  {id:"asana_1214877949235803",title:"Not a Motivation Problem, It's an Environment Problem",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-18",instagram_url:"https://www.instagram.com/p/DYc7Fw3E5B7/",ig_id:"18098097338158298",matched:"auto",reach:360,likes:20,comments:0,shares:0,last_fetched:"2026-05-23"},
+  {id:"asana_1214890034178998",title:"Gonna eat healthy this week - Boxing knockout reel",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-18",instagram_url:"https://www.instagram.com/reel/DYeO4SkBH6f/",ig_id:"17962733813937750",matched:"auto",views:262,reach:168,likes:3,comments:0,shares:0,watch_time_sec:8.0,last_fetched:"2026-05-23"},
+  {id:"asana_1214880856582796",title:"Fixed my gym consistency by quitting my job",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-18",matched:"unmatched"},
+  {id:"asana_1214880856582803",title:"Calories are what matter",type:"podcast",tags:[],bucket:"works-bollocks",date:"2026-05-19",instagram_url:"https://www.instagram.com/reel/DYfdS8hTaCI/",ig_id:"17950249383140864",matched:"auto",views:228,reach:187,likes:5,comments:0,shares:0,watch_time_sec:4.1,last_fetched:"2026-05-23"},
+  {id:"asana_1214959998744301",title:"Why I Built the Peak Pathway (Founders Carousel)",type:"carousel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-20",instagram_url:"https://www.instagram.com/p/DYiKFQAk5id/",ig_id:"17970327573067391",matched:"date-only",reach:145,likes:7,comments:0,shares:0,last_fetched:"2026-05-23"},
+  {id:"asana_1214960047612387",title:"Good All Week and Cutting Loose on the Weekend",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-20",instagram_url:"https://www.instagram.com/reel/DYjO192ivHg/",ig_id:"18176432761402095",matched:"date-only",views:221,reach:173,likes:2,comments:0,shares:0,watch_time_sec:6.3,last_fetched:"2026-05-23"},
+  {id:"asana_1214981416034289",title:"I'm a nutritionist and I'm not too scared to admit that...",type:"reel",tags:[],bucket:"sean",date:"2026-05-21",instagram_url:"https://www.instagram.com/reel/DYkqwuJzh0r/",ig_id:"17962915748935090",matched:"auto",views:499,reach:306,likes:8,comments:0,shares:0,watch_time_sec:8.0,last_fetched:"2026-05-23"},
+  {id:"asana_1215037449252339",title:"My calorie tracking experiment lasted two days (calculator CTA)",type:"carousel",tags:["leadgen"],bucket:"sean",date:"2026-05-21",instagram_url:"https://www.instagram.com/p/DYl_wshk1g6/",ig_id:"18169784941418568",matched:"auto",reach:173,likes:10,comments:1,shares:0,last_fetched:"2026-05-23"},
+  {id:"asana_1215076696333014",title:"I'm not like everyone els who turns boring in their 30s",type:"reel",tags:[],bucket:"sean",date:"2026-05-22",instagram_url:"https://www.instagram.com/reel/DYnJrinzqFz/",ig_id:"18106920164316646",matched:"auto",views:1818,reach:1322,likes:41,comments:2,shares:4,watch_time_sec:8.5,last_fetched:"2026-05-23"}
+  ];
+  // === SYNCED_POSTS_END ===
+
+  let goals   = {...DEFAULT_GOALS};
+  let buckets = JSON.parse(JSON.stringify(DEFAULT_BUCKETS));
+  let posts = [], startDate = null, activeTab = 'w1', rankMetric = 'saves', editingId = null;
+
+  // ── Persistence ──────────────────────────────────────────────────────────────
+  function loadGoals(){ const r = localStorage.getItem(LS_GOALS); goals = r ? {...DEFAULT_GOALS,...JSON.parse(r)} : {...DEFAULT_GOALS}; }
+  function persistGoals(){ localStorage.setItem(LS_GOALS, JSON.stringify(goals)); }
+
+  function loadBuckets(){
+    const r = localStorage.getItem(LS_BUCKETS);
+    if(r){
+      const saved = JSON.parse(r);
+      buckets = {};
+      Object.keys(DEFAULT_BUCKETS).forEach(k => { buckets[k] = saved[k] ? {...DEFAULT_BUCKETS[k],...saved[k]} : {...DEFAULT_BUCKETS[k]}; });
+    } else {
+      buckets = JSON.parse(JSON.stringify(DEFAULT_BUCKETS));
+    }
+  }
+  function persistBuckets(){ localStorage.setItem(LS_BUCKETS, JSON.stringify(buckets)); }
+
+  // ── Date helpers ─────────────────────────────────────────────────────────────
+  const nowRaw = new Date(); nowRaw.setHours(0,0,0,0);
+  function localISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  const TODAY = localISO(nowRaw);
+  function todayN(){ return startDate ? Math.floor((nowRaw - startDate) / 86400000) + 1 : 1; }
+  function curWeek(){ return Math.max(1, Math.ceil(todayN() / 7)); }
+  function totalWeeks(){
+    const maxPostW = posts.reduce((mx,p) => Math.max(mx, Math.ceil(d2n(p.date)/7)), 0);
+    const activeW  = activeTab.startsWith('w') ? parseInt(activeTab.replace('w','')) : 0;
+    return Math.max(curWeek(), maxPostW, activeW) + 1;
+  }
+  function n2d(n){ const d = new Date(startDate); d.setDate(d.getDate() + n - 1); return localISO(d); }
+  function d2n(ds){ const d = new Date(ds + 'T00:00:00'); return Math.floor((d - startDate) / 86400000) + 1; }
+  function fmt(ds){ const d = new Date(ds + 'T00:00:00'); const w = d.getDay(); return `${DAYS_LBL[w===0?6:w-1]} ${d.getDate()} ${MONS_LBL[d.getMonth()]}`; }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ── Posts ─────────────────────────────────────────────────────────────────────
+  function blankPost(p){ return {views:null,reach:null,likes:null,comments:null,saves:null,shares:null,watch_time_sec:null,dms:null,repurposedFrom:'',reflection:'',bucket:'',tags:[],instagram_url:'',...p}; }
+
+  function loadData(){
+    // Migrate old Sprint Tracker data
+    const sprintRaw = localStorage.getItem('pnc_sprint_v4');
+    const ctRaw     = localStorage.getItem('ct_posts_v1');
+    const raw       = localStorage.getItem(LS);
+
+    let stored;
+    if(raw){
+      stored = JSON.parse(raw);
+    } else if(sprintRaw || ctRaw){
+      // Merge old data sources
+      const sprint = sprintRaw ? JSON.parse(sprintRaw).map(p => ({...p, shares: p.shares ?? p.sends ?? null, sends: undefined})) : [];
+      const ct     = ctRaw     ? JSON.parse(ctRaw).map(p => ({...p, shares: p.shares ?? p.sends ?? null, sends: undefined}))     : [];
+      const merged = [...sprint];
+      const ids    = new Set(sprint.map(p => p.id));
+      const keys   = new Set(sprint.map(p => (p.title||'').toLowerCase().trim()+'|'+p.date));
+      ct.forEach(p => {
+        if(!ids.has(p.id) && !keys.has((p.title||'').toLowerCase().trim()+'|'+p.date)) merged.push(p);
+      });
+      stored = merged;
+    } else {
+      stored = getSeed();
+    }
+
+    // Merge SYNCED_POSTS
+    function normT(t){ return (t||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim().split(' ').slice(0,6).join(' '); }
+    const storedIds   = new Set(stored.map(p => p.id));
+    const storedKeys  = new Set(stored.map(p => (p.title||'').toLowerCase().trim()+'|'+p.date));
+    const storedNorms = new Set(stored.map(p => normT(p.title)+'|'+p.date));
+    const toAdd = SYNCED_POSTS.filter(p =>
+      !storedIds.has(p.id) &&
+      !storedKeys.has((p.title||'').toLowerCase().trim()+'|'+p.date) &&
+      !storedNorms.has(normT(p.title)+'|'+p.date)
+    ).map(p => blankPost(p));
+    posts = [...stored, ...toAdd];
+    persist();
+  }
+  function persist(){ localStorage.setItem(LS, JSON.stringify(posts)); }
+
+  function getSeed(){
+    const d1 = localISO(startDate);
+    return [
+      {id:'seed-1', title:'Example Reel',     type:'reel',     bucket:'', date:d1, views:null,reach:null,likes:null,comments:null,saves:null,shares:null,watch_time_sec:null,dms:null,repurposedFrom:'',reflection:'',tags:[]},
+      {id:'seed-2', title:'Example Carousel', type:'carousel', bucket:'', date:d1, views:null,reach:null,likes:null,comments:null,saves:null,shares:null,watch_time_sec:null,dms:null,repurposedFrom:'seed-1',reflection:'',tags:[]},
+    ];
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  function init(){
+    loadGoals();
+    loadBuckets();
+    const saved = localStorage.getItem(LS_START);
+    if(!saved){
+      // Suggest earliest SYNCED_POSTS date or today
+      const earliest = SYNCED_POSTS.reduce((mn,p) => p.date < mn ? p.date : mn, TODAY);
+      document.getElementById('setup-date').value = earliest;
+      document.getElementById('setup-overlay').classList.add('open');
+      return;
+    }
+    startDate = new Date(saved + 'T00:00:00');
+    activeTab = 'w' + curWeek();
+    loadData();
+    render();
+  }
+
+  function setupSave(){
+    const val = document.getElementById('setup-date').value;
+    if(!val){ document.getElementById('setup-date').focus(); return; }
+    localStorage.setItem(LS_START, val);
+    startDate = new Date(val + 'T00:00:00');
+    document.getElementById('setup-overlay').classList.remove('open');
+    activeTab = 'w' + curWeek();
+    loadData();
+    render();
+  }
+
+  // ── Settings ──────────────────────────────────────────────────────────────────
+  function openSettings(){
+    document.getElementById('settings-date').value = localISO(startDate);
+    Object.keys(DEFAULT_GOALS).forEach(t => { document.getElementById('sg-'+t).value = goals[t]; });
+    const container = document.getElementById('sg-buckets');
+    container.innerHTML = Object.entries(buckets).map(([key, b]) =>
+      `<div class="bucket-row">
+        <input type="color" id="bc-${key}" value="${b.color}">
+        <input type="text"  id="bl-${key}" value="${esc(b.label)}" placeholder="Bucket name">
+      </div>`
+    ).join('');
+    document.getElementById('settings-overlay').classList.add('open');
+  }
+  function closeSettings(){ document.getElementById('settings-overlay').classList.remove('open'); }
+
+  function settingsSave(){
+    const val = document.getElementById('settings-date').value;
+    if(!val){ document.getElementById('settings-date').focus(); return; }
+    localStorage.setItem(LS_START, val);
+    startDate = new Date(val + 'T00:00:00');
+    Object.keys(DEFAULT_GOALS).forEach(t => { const v = parseInt(document.getElementById('sg-'+t).value); goals[t] = isNaN(v)||v<0 ? 0 : v; });
+    persistGoals();
+    Object.keys(buckets).forEach(key => {
+      const lEl = document.getElementById('bl-'+key);
+      const cEl = document.getElementById('bc-'+key);
+      if(lEl) buckets[key].label = lEl.value.trim() || DEFAULT_BUCKETS[key].label;
+      if(cEl) buckets[key].color = cEl.value;
+    });
+    persistBuckets();
+    closeSettings();
+    render();
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────────
+  function render(){
+    document.getElementById('hdr-sub').textContent = `Week ${curWeek()} · Day ${Math.max(1,todayN())} · ${posts.length} post${posts.length!==1?'s':''} logged`;
+    renderTabs();
+    const isR = activeTab === 'rankings';
+    document.getElementById('goals').style.display   = isR ? 'none' : 'grid';
+    document.getElementById('buckets').style.display = isR ? 'none' : 'grid';
+    document.getElementById('grid').style.display    = isR ? 'none' : 'block';
+    document.getElementById('rankings').style.display = isR ? 'block' : 'none';
+    if(isR){ renderRankings(); } else { const w = parseInt(activeTab.replace('w','')); renderGoals(w); renderBuckets(w); renderGrid(w); }
+  }
+
+  function wRange(w){
+    const mon = n2d((w-1)*7+1), sun = n2d(w*7);
+    const f = d => `${new Date(d+'T00:00:00').getDate()} ${MONS_LBL[new Date(d+'T00:00:00').getMonth()]}`;
+    return `${f(mon)} – ${f(sun)}`;
+  }
+
+  function renderTabs(){
+    const cw = curWeek(), tw = totalWeeks();
+    const tabs = Array.from({length:tw},(_,i)=>i+1).map(w =>
+      `<button class="ntab ${activeTab==='w'+w?'active':''}" onclick="setTab('w${w}')">Week ${w}${w===cw?' · now':''}<span style="display:block;font-size:9px;color:var(--muted);font-weight:400;margin-top:1px">${wRange(w)}</span></button>`
+    ).join('');
+    document.getElementById('ntabs').innerHTML = tabs +
+      `<button class="ntab rankings-tab ${activeTab==='rankings'?'active':''}" onclick="setTab('rankings')">&#8593; Rankings</button>`;
+  }
+
+  function wPosts(w){ return posts.filter(p => { const n = d2n(p.date); return n >= (w-1)*7+1 && n <= w*7; }); }
+
+  function renderGoals(w){
+    document.getElementById('goals').innerHTML = Object.entries(goals).map(([type, goal]) => {
+      const count = wPosts(w).filter(p => type==='leadgen' ? p.type===type||(Array.isArray(p.tags)&&p.tags.includes(type)) : p.type===type).length;
+      const pct = Math.min((count/goal)*100, 100), met = count >= goal, color = TYPES[type].color;
+      return `<div class="goal-card ${met?'met':''}" style="--tc-20:${color}28">
+        <div class="goal-label" style="${met?'color:'+color:''}">${TYPES[type].label}</div>
+        <div class="goal-count" style="${met?'color:'+color:''}">${count}<small>/${goal}</small></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderBuckets(w){
+    const wp = wPosts(w);
+    document.getElementById('buckets').innerHTML = Object.entries(buckets).map(([key, b]) => {
+      const count = wp.filter(p => p.bucket === key).length;
+      return `<div class="bucket-card" style="--bc:${b.color}">
+        <div class="bucket-label">${esc(b.label)}</div>
+        <div class="bucket-count">${count}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderGrid(w){
+    document.getElementById('grid').innerHTML = Array.from({length:7},(_,i) => {
+      const n = (w-1)*7+i+1, date = n2d(n);
+      const isToday = date===TODAY, isFuture = date>TODAY;
+      const dp = posts.filter(p => p.date===date);
+      const ph = dp.length===0 ? (isFuture ? '' : '<div class="empty-day">nothing logged</div>') : dp.map(postCard).join('');
+      return `<div class="day-row ${isToday?'today':''}">
+        <div><div class="day-name">${isToday?'→ ':''}${fmt(date)}</div><div class="day-num">Day ${n}</div></div>
+        <div class="day-posts">${ph}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function postCard(p){
+    const color = TYPES[p.type]?.color || '#888';
+    const b     = p.bucket && buckets[p.bucket] ? buckets[p.bucket] : null;
+    const src     = posts.find(x => x.id === p.repurposedFrom);
+    const derived = posts.filter(x => x.repurposedFrom === p.id);
+    const repFrom = src     ? `<span class="repurpose-pill">↩ ${TYPES[src.type]?.label||src.type}</span>` : '';
+    const repAs   = derived.length ? `<span class="repurpose-pill">→ ${derived.map(d=>TYPES[d.type]?.label||d.type).join(', ')}</span>` : '';
+    const bucketTag = b ? `<span class="bucket-badge" style="--bc:${b.color}">${esc(b.label)}</span>` : '';
+    const tagPills  = (p.tags||[]).filter(t=>t==='leadgen').map(()=>`<span class="repurpose-pill" style="color:#22D3EE">Lead gen</span>`).join('');
+    const igLink = p.instagram_url ? `<a href="${esc(p.instagram_url)}" target="_blank" onclick="event.stopPropagation()" style="font-size:9px;color:var(--muted);text-decoration:none;margin-left:auto">↗ IG</a>` : '';
+    const icons = {views:'▶',reach:'👁',likes:'♥',comments:'💬',saves:'⬇',shares:'↗',watch_time_sec:'⏱',dms:'✉'};
+    const stats = STAT_FIELDS.filter(k => p[k]).map(k => {
+      const val = k==='watch_time_sec' ? p[k]+'s' : p[k].toLocaleString();
+      return `<span class="stat">${icons[k]} ${val}</span>`;
+    }).join('');
+    const ref = p.reflection ? `<div class="card-reflection">${esc(p.reflection)}</div>` : '';
+    return `<div class="post-card" onclick="openEdit('${p.id}')" style="--tc:${color};border-left-color:${color}">
+      <div class="card-header"><span class="type-badge">${TYPES[p.type]?.label||p.type}</span>${bucketTag}${repFrom}${repAs}${tagPills}${igLink}</div>
+      <div class="card-title">${esc(p.title)}</div>
+      ${stats?`<div class="card-stats">${stats}</div>`:''}${ref}
+      <button class="card-del" onclick="event.stopPropagation();delById('${p.id}')">&#215;</button>
+    </div>`;
+  }
+
+  function renderRankings(){
+    const metric = METRICS.find(m => m.key===rankMetric) || METRICS[0];
+    const ranked = [...posts].filter(p => p[rankMetric]!=null && p[rankMetric]!=='').sort((a,b)=>(b[rankMetric]||0)-(a[rankMetric]||0));
+    const opts = METRICS.map(m => `<option value="${m.key}" ${m.key===rankMetric?'selected':''}>${m.label}${m.hint?' ('+m.hint+')':''}</option>`).join('');
+    let html = `<div class="rankings-controls"><label>Sort by</label>
+      <select class="metric-select" onchange="setMetric(this.value)">${opts}</select>
+      <span style="font-size:12px;color:var(--muted)">${ranked.length} post${ranked.length!==1?'s':''} with data</span></div>`;
+    if(!ranked.length){
+      html += `<div class="no-data-msg">No posts have ${metric.label.toLowerCase()} data yet. Click any post to add stats.</div>`;
+    } else {
+      html += ranked.map((p,i) => {
+        const color = TYPES[p.type]?.color || '#888';
+        const b = p.bucket && buckets[p.bucket] ? buckets[p.bucket] : null;
+        const val = rankMetric==='watch_time_sec' ? p[rankMetric]+'s' : p[rankMetric].toLocaleString();
+        return `<div class="rank-row ${i===0?'gold':''}" onclick="openEdit('${p.id}')">
+          <div class="rank-num">${i+1}</div>
+          <div>
+            <div class="rank-title">${esc(p.title)}</div>
+            <div class="rank-meta">
+              <span class="rank-tag" style="color:${color}">${TYPES[p.type]?.label||p.type}</span>
+              ${b?`<span class="rank-tag" style="color:${b.color}">${esc(b.label)}</span>`:''}
+              <span class="rank-date">${fmt(p.date)} · Day ${d2n(p.date)}</span>
+            </div>
+          </div>
+          <div class="rank-value">${val}<small>${metric.label}</small></div>
+        </div>`;
+      }).join('');
+    }
+    document.getElementById('rankings').innerHTML = html;
+  }
+
+  // ── Modal helpers ─────────────────────────────────────────────────────────────
+  function setTab(t){ activeTab = t; render(); }
+  function setMetric(m){ rankMetric = m; renderRankings(); }
+
+  function fillBucketSelect(selected){
+    const sel = document.getElementById('f-bucket');
+    sel.innerHTML = '<option value="">— Not tagged —</option>' +
+      Object.entries(buckets).map(([key, b]) =>
+        `<option value="${key}" ${key===selected?'selected':''}>${esc(b.label)}</option>`
+      ).join('');
+  }
+
+  function fillRepurposeSelect(selected, excludeId){
+    const sel = document.getElementById('f-repurposed');
+    sel.innerHTML = '<option value="">Not repurposed</option>';
+    posts.filter(p => p.id !== excludeId).forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id; o.textContent = `${TYPES[p.type]?.label||p.type}: ${p.title.slice(0,45)}`;
+      if(p.id === selected) o.selected = true; sel.appendChild(o);
+    });
+  }
+
+  function openAdd(){
+    editingId = null;
+    document.getElementById('modal-ttl').textContent = 'Log post';
+    document.getElementById('del-btn').style.display = 'none';
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-type').value  = 'reel';
+    document.getElementById('f-date').value  = TODAY;
+    document.getElementById('f-tag-leadgen').checked = false;
+    STAT_FIELDS.forEach(k => { document.getElementById('f-'+k).value = ''; });
+    document.getElementById('f-reflection').value = '';
+    document.getElementById('f-instagram').value = '';
+    fillBucketSelect('');
+    fillRepurposeSelect('', null);
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function openEdit(id){
+    editingId = id; const p = posts.find(x => x.id===id); if(!p) return;
+    document.getElementById('modal-ttl').textContent = 'Edit post';
+    document.getElementById('del-btn').style.display = 'inline-flex';
+    document.getElementById('f-title').value = p.title;
+    document.getElementById('f-type').value  = p.type;
+    document.getElementById('f-date').value  = p.date;
+    document.getElementById('f-tag-leadgen').checked = p.type==='leadgen' || (Array.isArray(p.tags) && p.tags.includes('leadgen'));
+    STAT_FIELDS.forEach(k => { document.getElementById('f-'+k).value = p[k] ?? ''; });
+    document.getElementById('f-reflection').value = p.reflection ?? '';
+    document.getElementById('f-instagram').value = p.instagram_url || '';
+    fillBucketSelect(p.bucket ?? '');
+    fillRepurposeSelect(p.repurposedFrom, id);
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function closeModal(){ document.getElementById('overlay').classList.remove('open'); editingId = null; }
+
+  function savePost(){
+    const title = document.getElementById('f-title').value.trim();
+    if(!title){ document.getElementById('f-title').focus(); return; }
+    const n = k => { const v = document.getElementById('f-'+k).value; return v==='' ? null : +v; };
+    const lgCb = document.getElementById('f-tag-leadgen');
+    const tags = lgCb && lgCb.checked ? ['leadgen'] : [];
+    const data = {
+      title, type: document.getElementById('f-type').value,
+      bucket:        document.getElementById('f-bucket').value,
+      date:          document.getElementById('f-date').value,
+      repurposedFrom:document.getElementById('f-repurposed').value,
+      reflection:    document.getElementById('f-reflection').value.trim(),
+      instagram_url: document.getElementById('f-instagram').value.trim(),
+      tags,
+    };
+    STAT_FIELDS.forEach(k => { data[k] = n(k); });
+    if(editingId){ posts = posts.map(p => p.id===editingId ? {...p,...data} : p); }
+    else { posts.push({...data, id: Date.now().toString()}); }
+    persist(); render(); closeModal();
+  }
+
+  function deletePost(){ if(editingId){ delById(editingId); closeModal(); } }
+  function delById(id){
+    if(!confirm('Delete this post?')) return;
+    posts = posts.filter(p => p.id!==id).map(p => p.repurposedFrom===id ? {...p,repurposedFrom:''} : p);
+    persist(); render();
+  }
+
+  function backupData(){
+    const payload = { exportedAt: new Date().toISOString(), startDate: localStorage.getItem(LS_START), goals: localStorage.getItem(LS_GOALS), buckets: localStorage.getItem(LS_BUCKETS), posts: localStorage.getItem(LS) };
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href = url; a.download = `pnc-content-backup-${TODAY}.json`;
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('overlay').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+  document.getElementById('settings-overlay').addEventListener('click', function(e){ if(e.target===this) closeSettings(); });
+
+  init();
+</script>
+</body>
+</html>
