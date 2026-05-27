@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Content Tracker — PNC</title>
+  <title>Content Tracker &#8212; PNC</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -132,9 +132,9 @@
   <div class="modal setup-modal">
     <div class="setup-eyebrow">Welcome</div>
     <div class="setup-title">Content Tracker</div>
-    <div class="setup-desc">Log every post you publish — reels, carousels, stories, and more. Your data stays on this device. Set a start date and everything organises by week automatically.</div>
+    <div class="setup-desc">Log every post you publish &#8212; reels, carousels, stories, and more. Your data stays on this device. Set a start date and everything organises by week automatically.</div>
     <div class="field" style="margin-bottom:22px">
-      <label>Start date — when does week 1 begin?</label>
+      <label>Start date &#8212; when does week 1 begin?</label>
       <input type="date" id="setup-date">
       <div class="stat-hint">You can change this any time in settings.</div>
     </div>
@@ -170,21 +170,21 @@
         </div>
       </div>
       <div class="field fg-full"><label>Repurposed from</label><select id="f-repurposed"></select></div>
-      <div class="field fg-full"><label>Instagram URL</label><input type="url" id="f-instagram" placeholder="https://www.instagram.com/p/…"><div class="stat-hint">Paste when live — used to pull performance data automatically</div></div>
+      <div class="field fg-full"><label>Instagram URL</label><input type="url" id="f-instagram" placeholder="https://www.instagram.com/p/&#8230;"><div class="stat-hint">Paste when live &#8212; used to pull performance data automatically</div></div>
     </div>
-    <div class="section-divider">Performance — add now or come back later</div>
+    <div class="section-divider">Performance &#8212; add now or come back later</div>
     <div class="stats-grid">
-      <div class="field"><label>Views</label><input type="number" id="f-views" placeholder="—"><div class="stat-hint">Reel plays</div></div>
-      <div class="field"><label>Reach</label><input type="number" id="f-reach" placeholder="—"><div class="stat-hint">Unique viewers</div></div>
-      <div class="field"><label>Likes</label><input type="number" id="f-likes" placeholder="—"></div>
-      <div class="field"><label>Comments</label><input type="number" id="f-comments" placeholder="—"></div>
-      <div class="field"><label>Saves</label><input type="number" id="f-saves" placeholder="—"></div>
-      <div class="field"><label>Shares</label><input type="number" id="f-shares" placeholder="—"><div class="stat-hint">Forwards / reposts</div></div>
-      <div class="field"><label>Watch time (s)</label><input type="number" id="f-watch_time_sec" placeholder="—" step="0.1"><div class="stat-hint">Avg. seconds</div></div>
-      <div class="field"><label>DMs</label><input type="number" id="f-dms" placeholder="—"></div>
+      <div class="field"><label>Views</label><input type="number" id="f-views" placeholder="&#8212;"><div class="stat-hint">Reel plays</div></div>
+      <div class="field"><label>Reach</label><input type="number" id="f-reach" placeholder="&#8212;"><div class="stat-hint">Unique viewers</div></div>
+      <div class="field"><label>Likes</label><input type="number" id="f-likes" placeholder="&#8212;"></div>
+      <div class="field"><label>Comments</label><input type="number" id="f-comments" placeholder="&#8212;"></div>
+      <div class="field"><label>Saves</label><input type="number" id="f-saves" placeholder="&#8212;"></div>
+      <div class="field"><label>Shares</label><input type="number" id="f-shares" placeholder="&#8212;"><div class="stat-hint">Forwards / reposts</div></div>
+      <div class="field"><label>Watch time (s)</label><input type="number" id="f-watch_time_sec" placeholder="&#8212;" step="0.1"><div class="stat-hint">Avg. seconds</div></div>
+      <div class="field"><label>DMs</label><input type="number" id="f-dms" placeholder="&#8212;"></div>
     </div>
     <div class="section-divider">Reflection</div>
-    <div class="field"><label>What worked, what flopped, anything worth noting</label><textarea id="f-reflection" placeholder="Hook landed well. Saves were high — people are keeping it for later..."></textarea></div>
+    <div class="field"><label>What worked, what flopped, anything worth noting</label><textarea id="f-reflection" placeholder="Hook landed well. Saves were high &#8212; people are keeping it for later..."></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-danger" id="del-btn" onclick="deletePost()" style="display:none">Delete post</button>
       <div style="display:flex;gap:8px;margin-left:auto">
@@ -267,25 +267,34 @@
 
   // === SYNCED_POSTS_START ===
   const SYNCED_POSTS = [
-  {id:"asana_1214703610508903",title:"Don't compensate for a big weekend",type:"reel",tags:[],bucket:"imperfect-progress",date:"2026-05-11",matched:"unmatched"},
-  {id:"asana_1214688388337813",title:"Not changing much in a nutrition consult",type:"carousel",tags:["leadgen"],bucket:"works-bollocks",date:"2026-05-11",instagram_url:"https://www.instagram.com/p/DYMHqP4k5pc/",ig_id:"18042996356572157",matched:"auto",reach:208,likes:14,comments:1,shares:0,last_fetched:"2026-05-23"},
-  {id:"asana_1212669606383501",title:"Sorting out your diet",type:"carousel",tags:["leadgen"],bucket:"works-bollocks",date:"2026-05-11",matched:"unmatched"},
-  {id:"asana_1214721633121251",title:"You know what to eat (Situation Problem)",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-12",instagram_url:"https://www.instagram.com/p/DYOsZ-Ok4oP/",ig_id:"18009571811910610",matched:"auto",reach:336,likes:13,comments:0,shares:0,last_fetched:"2026-05-23"},
-  {id:"asana_1214721837048585",title:"When you swore you'd start eating healthy next week... it's next week",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-12",instagram_url:"https://www.instagram.com/reel/DYNgy0Oz-VL/",ig_id:"18082997105531713",matched:"auto",views:673,reach:385,likes:11,comments:0,shares:0,watch_time_sec:5.7,last_fetched:"2026-05-23"},
-  {id:"asana_1214763143173088",title:"Who I work with (all-or-nothing niche post)",type:"carousel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-13",instagram_url:"https://www.instagram.com/p/DYRXfF7kxWO/",ig_id:"18094650808922518",matched:"auto",reach:397,likes:23,comments:1,saves:1,shares:0,last_fetched:"2026-05-23"},
-  {id:"asana_1214796437350370",title:"Reposted oil reel",type:"reel",tags:[],bucket:"works-bollocks",date:"2026-05-14",matched:"unmatched"},
-  {id:"asana_1214826427206501",title:"I didn't even want the crisps (environment design)",type:"reel",tags:["leadgen"],bucket:"design-willpower",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYazjNwzjHx/",ig_id:"17879991378432943",matched:"date-only",views:118,reach:107,likes:0,comments:0,shares:0,watch_time_sec:4.6,last_fetched:"2026-05-23"},
-  {id:"asana_1214826452078903",title:"sliding down hill meme (you eat healthy all week, then Friday hits)",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYVr1SJzAGr/",ig_id:"18119479204735035",matched:"date-only",views:456,reach:302,likes:3,comments:0,shares:1,watch_time_sec:5.4,last_fetched:"2026-05-23"},
-  {id:"asana_1214878500465886",title:"Who do I work with and what do I do",type:"reel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYbUNRlzlDh/",ig_id:"18086976698071866",matched:"auto",views:107,reach:106,likes:0,comments:0,shares:0,watch_time_sec:4.3,last_fetched:"2026-05-23"},
-  {id:"asana_1214877949235803",title:"Not a Motivation Problem, It's an Environment Problem",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-18",instagram_url:"https://www.instagram.com/p/DYc7Fw3E5B7/",ig_id:"18098097338158298",matched:"auto",reach:360,likes:20,comments:0,shares:0,last_fetched:"2026-05-23"},
-  {id:"asana_1214890034178998",title:"Gonna eat healthy this week - Boxing knockout reel",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-18",instagram_url:"https://www.instagram.com/reel/DYeO4SkBH6f/",ig_id:"17962733813937750",matched:"auto",views:262,reach:168,likes:3,comments:0,shares:0,watch_time_sec:8.0,last_fetched:"2026-05-23"},
-  {id:"asana_1214880856582796",title:"Fixed my gym consistency by quitting my job",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-18",matched:"unmatched"},
-  {id:"asana_1214880856582803",title:"Calories are what matter",type:"podcast",tags:[],bucket:"works-bollocks",date:"2026-05-19",instagram_url:"https://www.instagram.com/reel/DYfdS8hTaCI/",ig_id:"17950249383140864",matched:"auto",views:228,reach:187,likes:5,comments:0,shares:0,watch_time_sec:4.1,last_fetched:"2026-05-23"},
-  {id:"asana_1214959998744301",title:"Why I Built the Peak Pathway (Founders Carousel)",type:"carousel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-20",instagram_url:"https://www.instagram.com/p/DYiKFQAk5id/",ig_id:"17970327573067391",matched:"date-only",reach:145,likes:7,comments:0,shares:0,last_fetched:"2026-05-23"},
-  {id:"asana_1214960047612387",title:"Good All Week and Cutting Loose on the Weekend",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-20",instagram_url:"https://www.instagram.com/reel/DYjO192ivHg/",ig_id:"18176432761402095",matched:"date-only",views:221,reach:173,likes:2,comments:0,shares:0,watch_time_sec:6.3,last_fetched:"2026-05-23"},
-  {id:"asana_1214981416034289",title:"I'm a nutritionist and I'm not too scared to admit that...",type:"reel",tags:[],bucket:"sean",date:"2026-05-21",instagram_url:"https://www.instagram.com/reel/DYkqwuJzh0r/",ig_id:"17962915748935090",matched:"auto",views:499,reach:306,likes:8,comments:0,shares:0,watch_time_sec:8.0,last_fetched:"2026-05-23"},
-  {id:"asana_1215037449252339",title:"My calorie tracking experiment lasted two days (calculator CTA)",type:"carousel",tags:["leadgen"],bucket:"sean",date:"2026-05-21",instagram_url:"https://www.instagram.com/p/DYl_wshk1g6/",ig_id:"18169784941418568",matched:"auto",reach:173,likes:10,comments:1,shares:0,last_fetched:"2026-05-23"},
-  {id:"asana_1215076696333014",title:"I'm not like everyone els who turns boring in their 30s",type:"reel",tags:[],bucket:"sean",date:"2026-05-22",instagram_url:"https://www.instagram.com/reel/DYnJrinzqFz/",ig_id:"18106920164316646",matched:"auto",views:1818,reach:1322,likes:41,comments:2,shares:4,watch_time_sec:8.5,last_fetched:"2026-05-23"}
+    {id:"asana_1214703610508903",title:"Don't compensate for a big weekend",type:"reel",tags:[],bucket:"imperfect-progress",date:"2026-05-11",matched:"unmatched"},
+    {id:"asana_1214688388337813",title:"Not changing much in a nutrition consult",type:"carousel",tags:["leadgen"],bucket:"design-willpower",date:"2026-05-11",instagram_url:"https://www.instagram.com/p/DYMHqP4k5pc/",ig_id:"18042996356572157",matched:"auto",reach:208,likes:14,comments:1,shares:0,last_fetched:"2026-05-23"},
+    {id:"asana_1212669606383501",title:"Sorting out your diet",type:"carousel",tags:[],bucket:"works-bollocks",date:"2026-05-11",matched:"unmatched"},
+    {id:"asana_1214721633121251",title:"You know what to eat (Situation Problem)",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-12",instagram_url:"https://www.instagram.com/p/DYOsZ-Ok4oP/",ig_id:"18009571811910610",matched:"auto",reach:336,likes:13,comments:0,shares:0,last_fetched:"2026-05-23"},
+    {id:"asana_1214721837048585",title:"When you swore you'd start eating healthy next week... it's next week",type:"reel",tags:[],bucket:"design-willpower",date:"2026-05-12",instagram_url:"https://www.instagram.com/reel/DYNgy0Oz-VL/",ig_id:"18082997105531713",matched:"auto",views:673,reach:385,likes:11,comments:0,shares:0,watch_time_sec:5.7,last_fetched:"2026-05-23"},
+    {id:"asana_1214763143173088",title:"Who I work with (all-or-nothing niche post)",type:"carousel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-13",instagram_url:"https://www.instagram.com/p/DYRXfF7kxWO/",ig_id:"18094650808922518",matched:"auto",reach:397,likes:23,comments:1,saves:1,shares:0,last_fetched:"2026-05-23"},
+    {id:"asana_1214796437350370",title:"Reposted oil reel",type:"reel",tags:[],bucket:"works-bollocks",date:"2026-05-14",matched:"unmatched"},
+    {id:"asana_1214826427206501",title:"I didn't even want the crisps (environment design)",type:"reel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYazjNwzjHx/",ig_id:"17879991378432943",matched:"date-only",views:118,reach:107,likes:0,comments:0,shares:0,watch_time_sec:4.6,last_fetched:"2026-05-23"},
+    {id:"asana_1214826452078903",title:"Repost — sliding down hill meme (you eat healthy all week, then Friday hits)",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYVr1SJzAGr/",ig_id:"18119479204735035",matched:"date-only",views:456,reach:302,likes:3,comments:0,shares:1,watch_time_sec:5.4,last_fetched:"2026-05-23"},
+    {id:"asana_1214878500465886",title:"Who do I work with and what do I do",type:"reel",tags:[],bucket:"design-willpower",date:"2026-05-17",instagram_url:"https://www.instagram.com/reel/DYbUNRlzlDh/",ig_id:"18086976698071866",matched:"auto",views:107,reach:106,likes:0,comments:0,shares:0,watch_time_sec:4.3,last_fetched:"2026-05-23"},
+    {id:"asana_1214877949235803",title:"Not a Motivation Problem, It's an Environment Problem",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-18",instagram_url:"https://www.instagram.com/p/DYc7Fw3E5B7/",ig_id:"18098097338158298",matched:"auto",reach:360,likes:20,comments:0,shares:0,last_fetched:"2026-05-23"},
+    {id:"asana_1214890034178998",title:"Gonna eat healthy this week - Boxing knockout reel",type:"reel",tags:[],bucket:"imperfect-progress",date:"2026-05-18",instagram_url:"https://www.instagram.com/reel/DYeO4SkBH6f/",ig_id:"17962733813937750",matched:"auto",views:262,reach:168,likes:3,comments:0,shares:0,watch_time_sec:8.0,last_fetched:"2026-05-23"},
+    {id:"asana_1214880856582796",title:"Fixed my gym consistency by quitting my job",type:"carousel",tags:[],bucket:"imperfect-progress",date:"2026-05-18",matched:"unmatched"},
+    {id:"asana_1214880856582803",title:"Calories are what matter",type:"podcast",tags:[],bucket:"works-bollocks",date:"2026-05-19",instagram_url:"https://www.instagram.com/reel/DYfdS8hTaCI/",ig_id:"17950249383140864",matched:"auto",views:228,reach:187,likes:5,comments:0,shares:0,watch_time_sec:4.1,last_fetched:"2026-05-23"},
+    {id:"asana_1214959998744301",title:"Why I Built the Peak Pathway (Founders Carousel)",type:"carousel",tags:["leadgen"],bucket:"peak-pathway",date:"2026-05-20",instagram_url:"https://www.instagram.com/p/DYiKFQAk5id/",ig_id:"17970327573067391",matched:"date-only",reach:145,likes:7,comments:0,shares:0,last_fetched:"2026-05-23"},
+    {id:"asana_1214960047612387",title:"Good All Week and Cutting Loose on the Weekend",type:"reel",tags:["leadgen"],bucket:"imperfect-progress",date:"2026-05-20",instagram_url:"https://www.instagram.com/reel/DYjO192ivHg/",ig_id:"18176432761402095",matched:"date-only",views:221,reach:173,likes:2,comments:0,shares:0,watch_time_sec:6.3,last_fetched:"2026-05-23"},
+    {id:"asana_1214981416034289",title:"I'm a nutritionist and I'm not too scared to admit that...",type:"reel",tags:[],bucket:"imperfect-progress",date:"2026-05-21",instagram_url:"https://www.instagram.com/reel/DYkqwuJzh0r/",ig_id:"17962915748935090",matched:"auto",views:499,reach:306,likes:8,comments:0,shares:0,watch_time_sec:8.0,last_fetched:"2026-05-23"},
+    {id:"asana_1215037449252339",title:"My calorie tracking experiment lasted two days (calculator CTA)",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-21",instagram_url:"https://www.instagram.com/p/DYl_wshk1g6/",ig_id:"18169784941418568",matched:"auto",reach:173,likes:10,comments:1,shares:0,last_fetched:"2026-05-23"},
+    {id:"asana_1215076696333014",title:"I'm not like everyone els who turns boring in their 30s",type:"reel",tags:[],bucket:"works-bollocks",date:"2026-05-22",instagram_url:"https://www.instagram.com/reel/DYnJrinzqFz/",ig_id:"18106920164316646",matched:"auto",views:1818,reach:1322,likes:41,comments:2,shares:4,watch_time_sec:8.5,last_fetched:"2026-05-23"},
+    {id:"asana_1215097284547504",title:"Meal Mapping System",type:"carousel",tags:[],bucket:"design-willpower",date:"2026-05-23"},
+    {id:"asana_1215097244701379",title:"Demonstrate Calorie Calculator",type:"reel",tags:[],bucket:"works-bollocks",date:"2026-05-24"},
+    {id:"asana_1215097244701381",title:"Most of Fitness Social Media is a load of shit",type:"carousel",tags:[],bucket:"works-bollocks",date:"2026-05-25"},
+    {id:"asana_1215097244701383",title:"Eating the Leftovers",type:"reel",tags:[],bucket:"works-bollocks",date:"2026-05-25"},
+    {id:"asana_1215097244701391",title:"Dieting in the Wrong Direction",type:"reel",tags:[],bucket:"works-bollocks",date:"2026-05-26"},
+    {id:"asana_1215097244701389",title:"POdcast Quotes - Lower The Bar",type:"podcast",tags:[],bucket:"works-bollocks",date:"2026-05-26"},
+    {id:"asana_1215097244701395",title:"Good & Bad Foods",type:"reel",tags:["leadgen"],bucket:"works-bollocks",date:"2026-05-27"},
+    {id:"asana_1215108593663743",title:"Does it surprise you that I still do these?",type:"carousel",tags:["leadgen"],bucket:"sean",date:"2026-05-27"},
+    {id:"asana_1215097244701390",title:"POdcast Clip - Lower bar",type:"podcast",tags:[],bucket:"works-bollocks",date:"2026-05-28"}
   ];
   // === SYNCED_POSTS_END ===
 
