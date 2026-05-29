@@ -372,7 +372,18 @@
       !storedKeys.has((p.title||'').toLowerCase().trim()+'|'+p.date) &&
       !storedNorms.has(normT(p.title)+'|'+p.date)
     ).map(p => blankPost(p));
-    posts = [...stored, ...toAdd];
+
+    // Push performance data from SYNCED_POSTS into existing localStorage posts
+    const PERF_FIELDS = ['instagram_url','ig_id','matched','views','reach','likes','comments','saves','shares','watch_time_sec','last_fetched'];
+    const syncedMap = new Map(SYNCED_POSTS.map(p => [p.id, p]));
+    const updatedStored = stored.map(p => {
+      const sp = syncedMap.get(p.id);
+      if (!sp) return p;
+      const patch = {};
+      PERF_FIELDS.forEach(f => { if (sp[f] !== undefined) patch[f] = sp[f]; });
+      return Object.keys(patch).length ? {...p, ...patch} : p;
+    });
+    posts = [...updatedStored, ...toAdd];
     persist();
   }
   function persist(){ localStorage.setItem(LS, JSON.stringify(posts)); }
