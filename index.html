@@ -259,6 +259,7 @@
   };
   const STAT_FIELDS = ['views','reach','likes','comments','saves','shares','watch_time_sec','dms'];
   const METRICS = [
+    {key:'engagement_pct',label:'Engagement %',hint:'likes+comments+saves+shares ÷ reach'},
     {key:'views',         label:'Views',       hint:'Reel plays'},
     {key:'reach',         label:'Reach',       hint:'Unique viewers'},
     {key:'likes',         label:'Likes',       hint:''},
@@ -308,7 +309,7 @@
 
   let goals   = {...DEFAULT_GOALS};
   let buckets = JSON.parse(JSON.stringify(DEFAULT_BUCKETS));
-  let posts = [], startDate = null, activeTab = 'w1', rankMetric = 'saves', rankType = 'all', editingId = null;
+  let posts = [], startDate = null, activeTab = 'w1', rankMetric = 'engagement_pct', rankType = 'all', editingId = null;
 
   // ── Persistence ──────────────────────────────────────────────────────────────
   function loadGoals(){ const r = localStorage.getItem(LS_GOALS); goals = r ? {...DEFAULT_GOALS,...JSON.parse(r)} : {...DEFAULT_GOALS}; }
@@ -554,10 +555,16 @@
     </div>`;
   }
 
+  function engPct(p){
+    if(!p.reach || p.reach <= 0) return null;
+    return Math.round(((p.likes||0)+(p.comments||0)+(p.saves||0)+(p.shares||0))/p.reach*1000)/10;
+  }
+
   function renderRankings(){
     const metric = METRICS.find(m => m.key===rankMetric) || METRICS[0];
     const typeFiltered = rankType==='all' ? posts : posts.filter(p => p.type===rankType);
-    const ranked = [...typeFiltered].filter(p => p[rankMetric]!=null && p[rankMetric]!=='').sort((a,b)=>(b[rankMetric]||0)-(a[rankMetric]||0));
+    const enriched = typeFiltered.map(p => ({...p, engagement_pct: engPct(p)}));
+    const ranked = [...enriched].filter(p => p[rankMetric]!=null && p[rankMetric]!=='').sort((a,b)=>(b[rankMetric]||0)-(a[rankMetric]||0));
     const opts = METRICS.map(m => `<option value="${m.key}" ${m.key===rankMetric?'selected':''}>${m.label}${m.hint?' ('+m.hint+')':''}</option>`).join('');
     const typeBtn = (val, label) => `<button class="type-filter-btn ${rankType===val?'active':''}" onclick="setRankType('${val}')">${label}</button>`;
     let html = `<div class="rankings-controls">
@@ -571,7 +578,9 @@
       html += ranked.map((p,i) => {
         const color = TYPES[p.type]?.color || '#888';
         const b = p.bucket && buckets[p.bucket] ? buckets[p.bucket] : null;
-        const val = rankMetric==='watch_time_sec' ? p[rankMetric]+'s' : p[rankMetric].toLocaleString();
+        const val = rankMetric==='watch_time_sec' ? p[rankMetric]+'s'
+                  : rankMetric==='engagement_pct'  ? p[rankMetric]+'%'
+                  : p[rankMetric].toLocaleString();
         return `<div class="rank-row ${i===0?'gold':''}" onclick="openEdit('${p.id}')">
           <div class="rank-num">${i+1}</div>
           <div>
